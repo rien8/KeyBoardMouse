@@ -42,6 +42,7 @@ Config defaultConfig()
 
     c.enabled = true;
     c.csvLog = false;
+    c.fixNumLock = true;
     return c;
 }
 
@@ -237,6 +238,7 @@ bool loadConfig(const wchar_t* iniPath, Config& out)
 
     readBool(iniPath, L"misc", L"enabled", out.enabled, out.enabled);
     readBool(iniPath, L"misc", L"csvLog", out.csvLog, out.csvLog);
+    readBool(iniPath, L"misc", L"fixNumLock", out.fixNumLock, out.fixNumLock);
     return true;
 }
 
@@ -254,6 +256,7 @@ bool saveConfig(const wchar_t* iniPath, const Config& cfg)
 
     writeBool(iniPath, L"misc", L"enabled", cfg.enabled);
     writeBool(iniPath, L"misc", L"csvLog", cfg.csvLog);
+    writeBool(iniPath, L"misc", L"fixNumLock", cfg.fixNumLock);
     return true;
 }
 

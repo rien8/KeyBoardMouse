@@ -193,6 +193,45 @@ TEST_CASE("action names cover every action with distinct non-empty labels")
             CHECK(std::strcmp(names[i], names[j]) != 0);
 }
 
+TEST_CASE("numlock fix is on by default and round-trips")
+{
+    Config def = defaultConfig();
+    CHECK(def.fixNumLock);
+
+    auto p = tempIni("numlock");
+    Config c = defaultConfig();
+    c.fixNumLock = false;
+    REQUIRE(saveConfig(p.c_str(), c));
+
+    Config d;
+    REQUIRE(loadConfig(p.c_str(), d));
+    CHECK_FALSE(d.fixNumLock);
+}
+
+TEST_CASE("hand-written ini can turn the numlock fix off")
+{
+    auto p = tempIni("numlockraw");
+    writeRawIni(p,
+        "[misc]\r\n"
+        "fixNumLock=0\r\n");
+
+    Config c;
+    REQUIRE(loadConfig(p.c_str(), c));
+    CHECK_FALSE(c.fixNumLock);
+}
+
+TEST_CASE("old ini without the numlock key keeps the default")
+{
+    auto p = tempIni("numlockold");
+    writeRawIni(p,
+        "[misc]\r\n"
+        "csvLog=1\r\n");
+
+    Config c;
+    REQUIRE(loadConfig(p.c_str(), c));
+    CHECK(c.fixNumLock);
+}
+
 TEST_CASE("scan names distinguish numpad, extended and unknown keys")
 {
     CHECK(std::string(scanName(0x48)) == u8"小键盘 8");

@@ -53,6 +53,7 @@ struct Config {
     Binding bindings[kActionCount];
     bool enabled;
     bool csvLog;
+    bool fixNumLock;
 };
 
 MotionParams defaultMotionParams();

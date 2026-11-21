@@ -115,6 +115,7 @@ mousekey/
     hook.h/.cpp     LL 钩子、扫描码表、捕获模式(纯逻辑与线程壳分离)
     engine.h/.cpp   定时器线程、加速曲线、亚像素累加(纯数学核心可测)
     inject.h/.cpp   SendInput 封装(move / wheel / button)
+    numlock.h/.cpp  启动时把 NumLock 关掉(仅当它开着时发一次切换)
     tray.h/.cpp     Shell_NotifyIcon、菜单、启用态图标
     ui.h/.cpp       ImGui 参数面板 + 键位捕获行
   tests/            doctest 单元测试(纯逻辑)

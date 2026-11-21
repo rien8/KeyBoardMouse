@@ -2,6 +2,7 @@
 #include "app.h"
 #include "engine.h"
 #include "hook.h"
+#include "numlock.h"
 
 #include "imgui.h"
 
@@ -161,7 +162,9 @@ void ui::draw(App& app, UiState& st)
                                actionName((Action)st.conflictAction));
     }
 
-    if (ImGui::CollapsingHeader(u8"调试")) {
+    if (ImGui::CollapsingHeader(u8"杂项")) {
+        if (ImGui::Checkbox(u8"启动时关闭 NumLock", &cfg.fixNumLock) && cfg.fixNumLock)
+            numlock::turnOff();
         ImGui::Checkbox(u8"记录 tick CSV (重启后生效)", &cfg.csvLog);
         ImGui::TextDisabled(u8"文件: mousekey_ticks.csv (exe 旁)");
     }

@@ -3,6 +3,7 @@
 #include "engine.h"
 #include "hook.h"
 #include "inject.h"
+#include "numlock.h"
 #include "resource.h"
 #include "tray.h"
 
@@ -227,6 +228,9 @@ int App::run(HINSTANCE inst)
 
     m_engine = new MotionEngine();
     m_engine->start(m_cfg.motion, m_cfg.csvLog);
+
+    if (m_cfg.fixNumLock)
+        numlock::turnOff();
 
     m_hook = new KeyboardHook();
     m_hook->setEngine(m_engine);

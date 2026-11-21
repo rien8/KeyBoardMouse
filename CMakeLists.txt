@@ -23,6 +23,7 @@ add_library(mkcore STATIC
     src/engine.cpp
     src/hook.cpp
     src/inject.cpp
+    src/numlock.cpp
 )
 target_include_directories(mkcore PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 if(MSVC)
