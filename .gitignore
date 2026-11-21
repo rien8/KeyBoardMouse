@@ -1,0 +1,5 @@
+build/
+build-*/
+_session_plan/
+*.log
+*.csv

@@ -1,0 +1,8 @@
+#include "resource.h"
+
+#define RT_MANIFEST 24
+
+IDI_MK_ON  ICON "mousekey_on.ico"
+IDI_MK_OFF ICON "mousekey_off.ico"
+
+1 RT_MANIFEST "mousekey.manifest"
