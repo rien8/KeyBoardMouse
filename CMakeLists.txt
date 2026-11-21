@@ -38,6 +38,7 @@ add_executable(mk_tests
     tests/test_config.cpp
     tests/test_engine.cpp
     tests/test_hook.cpp
+    tests/test_buttons.cpp
 )
 target_include_directories(mk_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/third_party/doctest

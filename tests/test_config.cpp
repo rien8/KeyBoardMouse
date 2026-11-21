@@ -53,13 +53,13 @@ TEST_CASE("default bindings follow the windows mouse-keys numpad")
     CHECK(c.bindings[(int)Action::DownLeft].scan == 0x4F);
     CHECK(c.bindings[(int)Action::DownRight].scan == 0x51);
     CHECK(c.bindings[(int)Action::Click].scan == 0x4C);
+    CHECK(c.bindings[(int)Action::RightClick].scan == 0x53);
     CHECK(c.bindings[(int)Action::Hold].scan == 0x52);
-    CHECK(c.bindings[(int)Action::Release].scan == 0x53);
+    CHECK(c.bindings[(int)Action::Release].scan == 0);
     CHECK(c.bindings[(int)Action::WheelUp].scan == 0x4E);
     CHECK(c.bindings[(int)Action::WheelDown].scan == 0x4A);
     CHECK(c.bindings[(int)Action::ModeLeft].scan == 0x135);
     CHECK(c.bindings[(int)Action::ModeRight].scan == 0x37);
-    CHECK(c.bindings[(int)Action::RightClick].scan == 0);
     CHECK(c.bindings[(int)Action::MiddleClick].scan == 0);
     CHECK(c.bindings[(int)Action::None].scan == 0);
 
@@ -209,4 +209,31 @@ TEST_CASE("scan names distinguish numpad, extended and unknown keys")
     CHECK(std::string(scanName(0x48 | SCAN_EXT)) != u8"小键盘 8");
     std::string unknown = scanName(0x180);
     CHECK(unknown.rfind("0x", 0) == 0);
+}
+
+TEST_CASE("old ini with Release on numpad dot migrates to right click")
+{
+    auto p = tempIni("migrate");
+    writeRawIni(p,
+        "[keys]\r\n"
+        "Release=0x53\r\n");
+
+    Config c;
+    REQUIRE(loadConfig(p.c_str(), c));
+    CHECK(c.bindings[(int)Action::RightClick].scan == 0x53);
+    CHECK(c.bindings[(int)Action::Release].scan == 0);
+}
+
+TEST_CASE("explicit right click binding is not overwritten by migration")
+{
+    auto p = tempIni("nomigrate");
+    writeRawIni(p,
+        "[keys]\r\n"
+        "Release=0x53\r\n"
+        "RightClick=0x4A\r\n");
+
+    Config c;
+    REQUIRE(loadConfig(p.c_str(), c));
+    CHECK(c.bindings[(int)Action::RightClick].scan == 0x4A);
+    CHECK(c.bindings[(int)Action::Release].scan == 0x53);
 }

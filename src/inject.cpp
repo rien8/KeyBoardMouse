@@ -1,8 +1,13 @@
 #include "inject.h"
 
+#include "buttons.h"
+
 #include <windows.h>
 
 namespace {
+
+ButtonState g_buttons;
+SRWLOCK g_lock = SRWLOCK_INIT;
 
 INPUT makeMouse(DWORD flags, int dx, int dy, int data)
 {
@@ -12,8 +17,6 @@ INPUT makeMouse(DWORD flags, int dx, int dy, int data)
     in.mi.dy = dy;
     in.mi.mouseData = (DWORD)(ULONG_PTR)(DWORD)data;
     in.mi.dwFlags = flags;
-    in.mi.time = 0;
-    in.mi.dwExtraInfo = 0;
     return in;
 }
 
@@ -57,14 +60,22 @@ void wheel(int detents)
 
 void buttonDown(int button)
 {
-    INPUT in = makeMouse(downFlag(button), 0, 0, 0);
-    SendInput(1, &in, sizeof(INPUT));
+    AcquireSRWLockExclusive(&g_lock);
+    if (g_buttons.press(button)) {
+        INPUT in = makeMouse(downFlag(button), 0, 0, 0);
+        SendInput(1, &in, sizeof(INPUT));
+    }
+    ReleaseSRWLockExclusive(&g_lock);
 }
 
 void buttonUp(int button)
 {
-    INPUT in = makeMouse(upFlag(button), 0, 0, 0);
-    SendInput(1, &in, sizeof(INPUT));
+    AcquireSRWLockExclusive(&g_lock);
+    if (g_buttons.release(button)) {
+        INPUT in = makeMouse(upFlag(button), 0, 0, 0);
+        SendInput(1, &in, sizeof(INPUT));
+    }
+    ReleaseSRWLockExclusive(&g_lock);
 }
 
 void click(int button)
@@ -75,11 +86,17 @@ void click(int button)
 
 void releaseAllButtons()
 {
-    INPUT ins[3] = {};
-    ins[0] = makeMouse(MOUSEEVENTF_LEFTUP, 0, 0, 0);
-    ins[1] = makeMouse(MOUSEEVENTF_RIGHTUP, 0, 0, 0);
-    ins[2] = makeMouse(MOUSEEVENTF_MIDDLEUP, 0, 0, 0);
-    SendInput(3, ins, sizeof(INPUT));
+    AcquireSRWLockExclusive(&g_lock);
+    const int held = g_buttons.takeAll();
+    INPUT ins[ButtonState::kMaxButtons];
+    int count = 0;
+    for (int b = 0; b < ButtonState::kMaxButtons; ++b) {
+        if (held & (1 << b))
+            ins[count++] = makeMouse(upFlag(b), 0, 0, 0);
+    }
+    if (count > 0)
+        SendInput((UINT)count, ins, sizeof(INPUT));
+    ReleaseSRWLockExclusive(&g_lock);
 }
 
 } // namespace inject

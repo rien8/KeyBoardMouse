@@ -118,6 +118,18 @@ TEST_CASE("numpad 5 clicks and numpad 0 holds without touching direction bits")
     CHECK(ks.wheelMask() == 0u);
 }
 
+TEST_CASE("numpad dot is a real right click binding")
+{
+    KeyState ks = routerWithDefaults();
+    KeyOutcome o = ks.onKey({ 0x53, false, false });
+    CHECK(o.swallow);
+    CHECK(o.action == Action::RightClick);
+    CHECK(ks.directionMask() == 0u);
+    KeyOutcome up = ks.onKey({ 0x53, false, true });
+    CHECK(up.swallow);
+    CHECK(up.action == Action::RightClick);
+}
+
 TEST_CASE("slash and star switch the click mode as single-shot actions")
 {
     KeyState ks = routerWithDefaults();

@@ -33,8 +33,8 @@ Config defaultConfig()
     c.bindings[(int)Action::DownLeft].scan = 0x4F;
     c.bindings[(int)Action::DownRight].scan = 0x51;
     c.bindings[(int)Action::Click].scan = 0x4C;
+    c.bindings[(int)Action::RightClick].scan = 0x53;
     c.bindings[(int)Action::Hold].scan = 0x52;
-    c.bindings[(int)Action::Release].scan = 0x53;
     c.bindings[(int)Action::WheelUp].scan = 0x4E;
     c.bindings[(int)Action::WheelDown].scan = 0x4A;
     c.bindings[(int)Action::ModeLeft].scan = 0x135;
@@ -227,6 +227,13 @@ bool loadConfig(const wchar_t* iniPath, Config& out)
 
     for (int i = 1; i < kActionCount; ++i)
         readScan(iniPath, L"keys", actionKey(i), out.bindings[i].scan, out.bindings[i].scan);
+
+    if (out.bindings[(int)Action::Release].scan == 0x53 &&
+        (out.bindings[(int)Action::RightClick].scan == 0 ||
+         out.bindings[(int)Action::RightClick].scan == 0x53)) {
+        out.bindings[(int)Action::RightClick].scan = 0x53;
+        out.bindings[(int)Action::Release].scan = 0;
+    }
 
     readBool(iniPath, L"misc", L"enabled", out.enabled, out.enabled);
     readBool(iniPath, L"misc", L"csvLog", out.csvLog, out.csvLog);
