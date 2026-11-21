@@ -2,5 +2,5 @@
 
 namespace numlock {
 bool isOn();
-bool turnOff();
+void pressToggle();
 }

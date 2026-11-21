@@ -6,14 +6,13 @@ namespace numlock {
 
 bool isOn()
 {
+    MSG msg;
+    PeekMessageW(&msg, nullptr, 0, 0, PM_NOREMOVE);
     return (GetKeyState(VK_NUMLOCK) & 0x0001) != 0;
 }
 
-bool turnOff()
+void pressToggle()
 {
-    if (!isOn())
-        return false;
-
     INPUT in[2] = {};
     for (int i = 0; i < 2; ++i) {
         in[i].type = INPUT_KEYBOARD;
@@ -22,7 +21,6 @@ bool turnOff()
         in[i].ki.dwFlags = (i == 1) ? KEYEVENTF_KEYUP : 0;
     }
     SendInput(2, in, sizeof(INPUT));
-    return true;
 }
 
 } // namespace numlock

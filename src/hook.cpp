@@ -166,6 +166,7 @@ KeyboardHook::KeyboardHook()
     , m_captureReq(false)
     , m_bindingsDirty(false)
     , m_clickButton(CLICK_BTN_LEFT)
+    , m_numLockOn(false)
     , m_heldButton(-1)
     , m_bindingLock(SRWLOCK_INIT)
     , m_state()
@@ -234,6 +235,8 @@ void KeyboardHook::setEnabled(bool on)
 DWORD WINAPI KeyboardHook::threadProc(LPVOID self)
 {
     auto* hook = static_cast<KeyboardHook*>(self);
+    hook->m_numLockOn.store((GetKeyState(VK_NUMLOCK) & 0x0001) != 0,
+                            std::memory_order_relaxed);
     hook->m_hook = SetWindowsHookExW(WH_KEYBOARD_LL, hookProc, nullptr, 0);
     hook->m_installed = (hook->m_hook != nullptr);
     if (hook->m_readyEvent)
@@ -303,6 +306,11 @@ int KeyboardHook::clickButton() const
     return m_clickButton.load(std::memory_order_relaxed);
 }
 
+bool KeyboardHook::numLockOn() const
+{
+    return m_numLockOn.load(std::memory_order_relaxed);
+}
+
 LRESULT CALLBACK KeyboardHook::hookProc(int code, WPARAM wp, LPARAM lp)
 {
     if (code == HC_ACTION) {
@@ -332,6 +340,13 @@ LRESULT CALLBACK KeyboardHook::hookProc(int code, WPARAM wp, LPARAM lp)
         }
 
         const bool enabled = self->m_enabled.load(std::memory_order_relaxed);
+        const bool swallowed = enabled && o.swallow;
+
+        if (ev.scan == 0x45 && !ev.isUp && !swallowed) {
+            const bool wasOn = self->m_numLockOn.load(std::memory_order_relaxed);
+            self->m_numLockOn.store(!wasOn, std::memory_order_relaxed);
+        }
+
         if (enabled) {
             self->applySideEffects(o, ev.isUp);
             if (self->m_engine)

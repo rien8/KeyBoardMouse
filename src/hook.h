@@ -67,6 +67,7 @@ public:
     void setCaptureMode(bool on);
     void setEnabled(bool on);
     int clickButton() const;
+    bool numLockOn() const;
 
 private:
     static DWORD WINAPI threadProc(LPVOID self);
@@ -85,6 +86,7 @@ private:
     std::atomic<bool> m_captureReq;
     std::atomic<bool> m_bindingsDirty;
     std::atomic<int> m_clickButton;
+    std::atomic<bool> m_numLockOn;
     int m_heldButton;
     SRWLOCK m_bindingLock;
     Binding m_pending[kActionCount];

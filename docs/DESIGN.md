@@ -89,6 +89,13 @@ v(t) = vStart + (vMax - vStart) * pow(min(t / rampMs, 1), gamma)
 - +:滚轮上;-:滚轮下
 - 右键/中键还各有独立的显式绑定动作,备用
 
+**NumLock 处理**:启用(含启动时已启用)把 NumLock 关掉,停用或退出时恢复。
+"是否由本工具关的"记在 `m_numLockLowered`,停用时只有当初是我们关的才恢复,
+不会去动用户自己关掉的状态。状态判定不能用 `GetKeyState`——后台线程拿到
+的是陈旧快照(窗口没收到键盘消息就不刷新),因此由键盘钩子记账:钩子能看到
+全局每一次 NumLock 按下(含别的程序合成的),未被吞掉才翻转模型。
+
+
 **注入侧的按键状态机**(`buttons.h`):记录本工具自己按下、尚未抬起的
 鼠标键;`释放`只抬起真正按着的键。早期版本无条件补发三个"抬起",
 导致按下释放键时会凭空产生一次右键抬起——Windows 会把它变成
@@ -115,7 +122,7 @@ mousekey/
     hook.h/.cpp     LL 钩子、扫描码表、捕获模式(纯逻辑与线程壳分离)
     engine.h/.cpp   定时器线程、加速曲线、亚像素累加(纯数学核心可测)
     inject.h/.cpp   SendInput 封装(move / wheel / button)
-    numlock.h/.cpp  启动时把 NumLock 关掉(仅当它开着时发一次切换)
+    numlock.h/.cpp  启用时关掉 NumLock、停用/退出时恢复(记录是否由本工具关的)
     tray.h/.cpp     Shell_NotifyIcon、菜单、启用态图标
     ui.h/.cpp       ImGui 参数面板 + 键位捕获行
   tests/            doctest 单元测试(纯逻辑)

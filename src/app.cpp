@@ -63,6 +63,7 @@ App::App()
     , m_tray(nullptr)
     , m_uiState(nullptr)
     , m_lastBindings()
+    , m_numLockLowered(false)
     , m_quit(false)
     , m_d3dDevice(nullptr)
     , m_d3dContext(nullptr)
@@ -229,15 +230,14 @@ int App::run(HINSTANCE inst)
     m_engine = new MotionEngine();
     m_engine->start(m_cfg.motion, m_cfg.csvLog);
 
-    if (m_cfg.fixNumLock)
-        numlock::turnOff();
-
     m_hook = new KeyboardHook();
     m_hook->setEngine(m_engine);
     m_hook->install(m_hwnd, WM_APP_CAPTURE);
     m_hook->setBindings(m_cfg.bindings, kActionCount);
     m_hook->setEnabled(m_cfg.enabled);
     copyBindings(m_lastBindings, m_cfg.bindings);
+    if (m_cfg.enabled)
+        applyNumLockOff();
 
     m_tray = new TrayIcon();
     m_tray->create(m_hwnd, m_inst, WM_APP_TRAY);
@@ -269,6 +269,7 @@ int App::run(HINSTANCE inst)
     }
 
     saveNow();
+    restoreNumLock();
     m_tray->remove();
     m_hook->remove();
     m_engine->stop();
@@ -317,6 +318,27 @@ const char* App::iniPathUtf8()
     return m_iniPathUtf8Buf;
 }
 
+void App::applyNumLockOff()
+{
+    if (!m_cfg.fixNumLock)
+        return;
+    const bool on = m_hook ? m_hook->numLockOn() : numlock::isOn();
+    if (on) {
+        numlock::pressToggle();
+        m_numLockLowered = true;
+    }
+}
+
+void App::restoreNumLock()
+{
+    if (!m_numLockLowered)
+        return;
+    m_numLockLowered = false;
+    const bool on = m_hook ? m_hook->numLockOn() : numlock::isOn();
+    if (!on)
+        numlock::pressToggle();
+}
+
 void App::setEnabled(bool on)
 {
     if (m_cfg.enabled == on)
@@ -325,6 +347,9 @@ void App::setEnabled(bool on)
     if (!on) {
         m_engine->setInput(0);
         inject::releaseAllButtons();
+        restoreNumLock();
+    } else {
+        applyNumLockOff();
     }
     m_hook->setEnabled(on);
     m_tray->update(on);

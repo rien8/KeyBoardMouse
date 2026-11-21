@@ -34,6 +34,8 @@ public:
     const char* iniPathUtf8();
 
     void setEnabled(bool on);
+    void applyNumLockOff();
+    void restoreNumLock();
     void showSettings();
     void onCaptureResult(unsigned short scan, bool cancelled);
     void applyLive();
@@ -66,6 +68,7 @@ private:
     TrayIcon* m_tray;
     ui::UiState* m_uiState;
     Binding m_lastBindings[kActionCount];
+    bool m_numLockLowered;
     bool m_quit;
 
     ID3D11Device* m_d3dDevice;
