@@ -4,6 +4,7 @@
 #include "hook.h"
 #include "inject.h"
 #include "numlock.h"
+#include "autostart.h"
 #include "resource.h"
 #include "tray.h"
 
@@ -64,6 +65,7 @@ App::App()
     , m_uiState(nullptr)
     , m_lastBindings()
     , m_numLockLowered(false)
+    , m_autostart(false)
     , m_quit(false)
     , m_d3dDevice(nullptr)
     , m_d3dContext(nullptr)
@@ -216,6 +218,7 @@ int App::run(HINSTANCE inst)
 
     m_iniPath = exeDir() + L"mousekey.ini";
     loadConfig(m_iniPath.c_str(), m_cfg);
+    m_autostart = autostart::isEnabled();
     m_uiState = new ui::UiState();
 
     if (!createWindow())
@@ -324,7 +327,10 @@ void App::applyNumLockOff()
         return;
     const bool on = m_hook ? m_hook->numLockOn() : numlock::isOn();
     if (on) {
-        numlock::pressToggle();
+        if (m_hook)
+            m_hook->pressNumLockToggle();
+        else
+            numlock::pressToggle();
         m_numLockLowered = true;
     }
 }
@@ -335,8 +341,12 @@ void App::restoreNumLock()
         return;
     m_numLockLowered = false;
     const bool on = m_hook ? m_hook->numLockOn() : numlock::isOn();
-    if (!on)
-        numlock::pressToggle();
+    if (!on) {
+        if (m_hook)
+            m_hook->pressNumLockToggle();
+        else
+            numlock::pressToggle();
+    }
 }
 
 void App::setEnabled(bool on)
@@ -354,6 +364,14 @@ void App::setEnabled(bool on)
     m_hook->setEnabled(on);
     m_tray->update(on);
     saveNow();
+}
+
+bool App::setAutostart(bool on)
+{
+    if (!autostart::setEnabled(on))
+        return false;
+    m_autostart = on;
+    return true;
 }
 
 void App::showSettings()
@@ -436,6 +454,9 @@ LRESULT CALLBACK App::wndProc(HWND h, UINT msg, WPARAM wp, LPARAM lp)
         return 0;
     case WM_APP_CAPTURE:
         app.onCaptureResult((unsigned short)wp, lp != 0);
+        return 0;
+    case WM_APP_TOGGLE:
+        app.setEnabled(!app.cfg().enabled);
         return 0;
     case WM_GETMINMAXINFO: {
         auto* mmi = reinterpret_cast<MINMAXINFO*>(lp);

@@ -60,6 +60,7 @@ TEST_CASE("default bindings follow the windows mouse-keys numpad")
     CHECK(c.bindings[(int)Action::WheelDown].scan == 0x4A);
     CHECK(c.bindings[(int)Action::ModeLeft].scan == 0x135);
     CHECK(c.bindings[(int)Action::ModeRight].scan == 0x37);
+    CHECK(c.bindings[(int)Action::ToggleEnabled].scan == 0x45);
     CHECK(c.bindings[(int)Action::MiddleClick].scan == 0);
     CHECK(c.bindings[(int)Action::None].scan == 0);
 

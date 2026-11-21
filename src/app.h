@@ -3,12 +3,10 @@
 #include <windows.h>
 
 #include "config.h"
+#include "messages.h"
 #include "ui.h"
 
 #include <string>
-
-#define WM_APP_TRAY (WM_APP + 1)
-#define WM_APP_CAPTURE (WM_APP + 2)
 
 class MotionEngine;
 class KeyboardHook;
@@ -36,6 +34,8 @@ public:
     void setEnabled(bool on);
     void applyNumLockOff();
     void restoreNumLock();
+    bool autostartEnabled() const { return m_autostart; }
+    bool setAutostart(bool on);
     void showSettings();
     void onCaptureResult(unsigned short scan, bool cancelled);
     void applyLive();
@@ -69,6 +69,7 @@ private:
     ui::UiState* m_uiState;
     Binding m_lastBindings[kActionCount];
     bool m_numLockLowered;
+    bool m_autostart;
     bool m_quit;
 
     ID3D11Device* m_d3dDevice;

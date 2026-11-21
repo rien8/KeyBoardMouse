@@ -39,6 +39,7 @@ Config defaultConfig()
     c.bindings[(int)Action::WheelDown].scan = 0x4A;
     c.bindings[(int)Action::ModeLeft].scan = 0x135;
     c.bindings[(int)Action::ModeRight].scan = 0x37;
+    c.bindings[(int)Action::ToggleEnabled].scan = 0x45;
 
     c.enabled = true;
     c.csvLog = false;
@@ -136,6 +137,7 @@ const wchar_t* actionKey(int action)
         L"Hold", L"Release",
         L"WheelUp", L"WheelDown",
         L"ModeLeft", L"ModeRight",
+        L"ToggleEnabled",
     };
     return names[action];
 }
@@ -201,6 +203,7 @@ const char* g_actionNames[kActionCount] = {
     u8"按住", u8"释放按键",
     u8"滚轮上", u8"滚轮下",
     u8"5 切左键", u8"5 切右键",
+    u8"启用/停用",
 };
 
 } // namespace

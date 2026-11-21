@@ -38,6 +38,7 @@ enum class Action : unsigned char {
     WheelDown,
     ModeLeft,
     ModeRight,
+    ToggleEnabled,
     Count
 };
 

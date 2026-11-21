@@ -163,6 +163,9 @@ void ui::draw(App& app, UiState& st)
     }
 
     if (ImGui::CollapsingHeader(u8"杂项")) {
+        bool autostartOn = app.autostartEnabled();
+        if (ImGui::Checkbox(u8"开机自动启动", &autostartOn))
+            app.setAutostart(autostartOn);
         if (ImGui::Checkbox(u8"启用时关闭 NumLock", &cfg.fixNumLock) && cfg.fixNumLock)
             app.applyNumLockOff();
         ImGui::SameLine();

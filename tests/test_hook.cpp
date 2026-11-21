@@ -50,8 +50,31 @@ TEST_CASE("auto-repeat down events are swallowed but ignored")
     KeyOutcome o = ks.onKey({ 0x48, false, false });
     CHECK(o.swallow);
     CHECK(o.repeat);
-    CHECK(o.action == Action::None);
+    CHECK(o.action == Action::Up);
     CHECK(ks.directionMask() == DIR_UP);
+}
+
+TEST_CASE("numlock toggles enabled as a single-shot action")
+{
+    KeyState ks = routerWithDefaults();
+    KeyOutcome down = ks.onKey({ 0x45, false, false });
+    CHECK(down.swallow);
+    CHECK(down.action == Action::ToggleEnabled);
+    CHECK_FALSE(down.repeat);
+    CHECK(ks.directionMask() == 0u);
+    CHECK(ks.wheelMask() == 0u);
+
+    KeyOutcome repeatDown = ks.onKey({ 0x45, false, false });
+    CHECK(repeatDown.swallow);
+    CHECK(repeatDown.repeat);
+    CHECK(repeatDown.action == Action::ToggleEnabled);
+
+    KeyOutcome up = ks.onKey({ 0x45, false, true });
+    CHECK(up.swallow);
+    CHECK(up.action == Action::ToggleEnabled);
+
+    KeyOutcome again = ks.onKey({ 0x45, false, false });
+    CHECK_FALSE(again.repeat);
 }
 
 TEST_CASE("up event for a key we never saw down keeps state consistent")

@@ -2,6 +2,8 @@
 
 #include "engine.h"
 #include "inject.h"
+#include "messages.h"
+#include "numlock.h"
 
 namespace {
 
@@ -141,7 +143,6 @@ KeyOutcome KeyState::onKey(const HookEvent& ev)
 
     if (keyIsDown(code)) {
         o.repeat = true;
-        o.action = Action::None;
         return o;
     }
 
@@ -167,6 +168,7 @@ KeyboardHook::KeyboardHook()
     , m_bindingsDirty(false)
     , m_clickButton(CLICK_BTN_LEFT)
     , m_numLockOn(false)
+    , m_injectedNumLock(0)
     , m_heldButton(-1)
     , m_bindingLock(SRWLOCK_INIT)
     , m_state()
@@ -311,6 +313,12 @@ bool KeyboardHook::numLockOn() const
     return m_numLockOn.load(std::memory_order_relaxed);
 }
 
+void KeyboardHook::pressNumLockToggle()
+{
+    m_injectedNumLock.fetch_add(2, std::memory_order_relaxed);
+    numlock::pressToggle();
+}
+
 LRESULT CALLBACK KeyboardHook::hookProc(int code, WPARAM wp, LPARAM lp)
 {
     if (code == HC_ACTION) {
@@ -336,6 +344,23 @@ LRESULT CALLBACK KeyboardHook::hookProc(int code, WPARAM wp, LPARAM lp)
         if (o.captured || o.cancelled) {
             PostMessageW(self->m_notifyWnd, self->m_captureMsg,
                          (WPARAM)o.capturedScan, o.cancelled ? 1 : 0);
+            return 1;
+        }
+
+        if (o.action == Action::ToggleEnabled) {
+            if ((kh->flags & LLKHF_INJECTED) != 0) {
+                const int pending = self->m_injectedNumLock.load(std::memory_order_relaxed);
+                if (pending > 0) {
+                    self->m_injectedNumLock.store(pending - 1, std::memory_order_relaxed);
+                    if (!ev.isUp) {
+                        const bool wasOn = self->m_numLockOn.load(std::memory_order_relaxed);
+                        self->m_numLockOn.store(!wasOn, std::memory_order_relaxed);
+                    }
+                    return CallNextHookEx(nullptr, code, wp, lp);
+                }
+            }
+            if (!ev.isUp && !o.repeat)
+                PostMessageW(self->m_notifyWnd, WM_APP_TOGGLE, 0, 0);
             return 1;
         }
 
