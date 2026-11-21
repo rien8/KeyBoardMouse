@@ -54,6 +54,12 @@ if(MSVC)
 endif()
 target_compile_definitions(injecthold PRIVATE UNICODE _UNICODE)
 
+add_executable(clickprobe tools/clickprobe.cpp)
+if(MSVC)
+    target_compile_options(clickprobe PRIVATE /W4 /permissive- /utf-8)
+endif()
+target_compile_definitions(clickprobe PRIVATE UNICODE _UNICODE)
+
 add_executable(mousekey WIN32
     src/main.cpp
     src/app.cpp

@@ -52,11 +52,13 @@ TEST_CASE("default bindings follow the windows mouse-keys numpad")
     CHECK(c.bindings[(int)Action::UpRight].scan == 0x49);
     CHECK(c.bindings[(int)Action::DownLeft].scan == 0x4F);
     CHECK(c.bindings[(int)Action::DownRight].scan == 0x51);
-    CHECK(c.bindings[(int)Action::LeftClick].scan == 0x4C);
-    CHECK(c.bindings[(int)Action::HoldLeft].scan == 0x52);
+    CHECK(c.bindings[(int)Action::Click].scan == 0x4C);
+    CHECK(c.bindings[(int)Action::Hold].scan == 0x52);
     CHECK(c.bindings[(int)Action::Release].scan == 0x53);
     CHECK(c.bindings[(int)Action::WheelUp].scan == 0x4E);
     CHECK(c.bindings[(int)Action::WheelDown].scan == 0x4A);
+    CHECK(c.bindings[(int)Action::ModeLeft].scan == 0x135);
+    CHECK(c.bindings[(int)Action::ModeRight].scan == 0x37);
     CHECK(c.bindings[(int)Action::RightClick].scan == 0);
     CHECK(c.bindings[(int)Action::MiddleClick].scan == 0);
     CHECK(c.bindings[(int)Action::None].scan == 0);
@@ -91,7 +93,7 @@ TEST_CASE("save then load round-trips modified values")
     c.bindings[(int)Action::Up].scan = 0x11;
     c.bindings[(int)Action::WheelDown].scan = 0x1F;
     c.bindings[(int)Action::RightClick].scan = 0x115;
-    c.bindings[(int)Action::LeftClick].scan = 0;
+    c.bindings[(int)Action::Click].scan = 0;
     c.enabled = false;
     c.csvLog = true;
 
@@ -109,7 +111,7 @@ TEST_CASE("save then load round-trips modified values")
     CHECK(d.bindings[(int)Action::Up].scan == 0x11);
     CHECK(d.bindings[(int)Action::WheelDown].scan == 0x1F);
     CHECK(d.bindings[(int)Action::RightClick].scan == 0x115);
-    CHECK(d.bindings[(int)Action::LeftClick].scan == 0);
+    CHECK(d.bindings[(int)Action::Click].scan == 0);
     CHECK(d.bindings[(int)Action::Down].scan == 0x50);
     CHECK_FALSE(d.enabled);
     CHECK(d.csvLog);
@@ -183,8 +185,8 @@ TEST_CASE("action names cover every action with distinct non-empty labels")
         names[i] = n;
     }
     CHECK(std::string(actionName(Action::Up)) == u8"上");
-    CHECK(std::string(actionName(Action::LeftClick)) == u8"左键单击");
-    CHECK(std::string(actionName(Action::HoldLeft)) == u8"按住左键");
+    CHECK(std::string(actionName(Action::Click)) == u8"单击");
+    CHECK(std::string(actionName(Action::Hold)) == u8"按住");
     CHECK(std::string(actionName(Action::WheelUp)) == u8"滚轮上");
     for (int i = 1; i < kActionCount; ++i)
         for (int j = i + 1; j < kActionCount; ++j)

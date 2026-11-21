@@ -165,6 +165,8 @@ KeyboardHook::KeyboardHook()
     , m_enabled(false)
     , m_captureReq(false)
     , m_bindingsDirty(false)
+    , m_clickButton(CLICK_BTN_LEFT)
+    , m_heldButton(-1)
     , m_bindingLock(SRWLOCK_INIT)
     , m_state()
 {
@@ -249,26 +251,57 @@ DWORD WINAPI KeyboardHook::threadProc(LPVOID self)
 
 namespace {
 
-void handleButtonSideEffects(const KeyOutcome& o, bool isUp)
+} // namespace
+
+void KeyboardHook::applySideEffects(const KeyOutcome& o, bool isUp)
 {
     if (o.repeat)
         return;
+
+    const bool rightMode = (m_clickButton.load(std::memory_order_relaxed) == CLICK_BTN_RIGHT);
+    const int activeButton = rightMode ? MKBTN_RIGHT : MKBTN_LEFT;
+
     if (isUp) {
-        if (o.action == Action::HoldLeft)
-            inject::buttonUp(MKBTN_LEFT);
+        if (o.action == Action::Hold && m_heldButton >= 0) {
+            inject::buttonUp(m_heldButton);
+            m_heldButton = -1;
+        }
         return;
     }
+
     switch (o.action) {
-    case Action::LeftClick: inject::click(MKBTN_LEFT); break;
-    case Action::RightClick: inject::click(MKBTN_RIGHT); break;
-    case Action::MiddleClick: inject::click(MKBTN_MIDDLE); break;
-    case Action::HoldLeft: inject::buttonDown(MKBTN_LEFT); break;
-    case Action::Release: inject::releaseAllButtons(); break;
-    default: break;
+    case Action::ModeLeft:
+        m_clickButton.store(CLICK_BTN_LEFT, std::memory_order_relaxed);
+        break;
+    case Action::ModeRight:
+        m_clickButton.store(CLICK_BTN_RIGHT, std::memory_order_relaxed);
+        break;
+    case Action::Click:
+        inject::click(activeButton);
+        break;
+    case Action::RightClick:
+        inject::click(MKBTN_RIGHT);
+        break;
+    case Action::MiddleClick:
+        inject::click(MKBTN_MIDDLE);
+        break;
+    case Action::Hold:
+        m_heldButton = activeButton;
+        inject::buttonDown(activeButton);
+        break;
+    case Action::Release:
+        inject::releaseAllButtons();
+        m_heldButton = -1;
+        break;
+    default:
+        break;
     }
 }
 
-} // namespace
+int KeyboardHook::clickButton() const
+{
+    return m_clickButton.load(std::memory_order_relaxed);
+}
 
 LRESULT CALLBACK KeyboardHook::hookProc(int code, WPARAM wp, LPARAM lp)
 {
@@ -300,7 +333,7 @@ LRESULT CALLBACK KeyboardHook::hookProc(int code, WPARAM wp, LPARAM lp)
 
         const bool enabled = self->m_enabled.load(std::memory_order_relaxed);
         if (enabled) {
-            handleButtonSideEffects(o, ev.isUp);
+            self->applySideEffects(o, ev.isUp);
             if (self->m_engine)
                 self->m_engine->setInput(
                     self->m_state.directionMask() | self->m_state.wheelMask());

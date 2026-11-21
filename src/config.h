@@ -29,13 +29,15 @@ enum class Action : unsigned char {
     UpRight,
     DownLeft,
     DownRight,
-    LeftClick,
+    Click,
     RightClick,
     MiddleClick,
-    HoldLeft,
+    Hold,
     Release,
     WheelUp,
     WheelDown,
+    ModeLeft,
+    ModeRight,
     Count
 };
 

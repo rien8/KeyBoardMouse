@@ -47,6 +47,11 @@ private:
 
 class MotionEngine;
 
+enum ClickButton {
+    CLICK_BTN_LEFT = 0,
+    CLICK_BTN_RIGHT = 1,
+};
+
 class KeyboardHook {
 public:
     KeyboardHook();
@@ -61,10 +66,12 @@ public:
     void setBindings(const Binding* bindings, int count);
     void setCaptureMode(bool on);
     void setEnabled(bool on);
+    int clickButton() const;
 
 private:
     static DWORD WINAPI threadProc(LPVOID self);
     static LRESULT CALLBACK hookProc(int code, WPARAM wp, LPARAM lp);
+    void applySideEffects(const KeyOutcome& o, bool isUp);
 
     HWND m_notifyWnd;
     UINT m_captureMsg;
@@ -77,6 +84,8 @@ private:
     std::atomic<bool> m_enabled;
     std::atomic<bool> m_captureReq;
     std::atomic<bool> m_bindingsDirty;
+    std::atomic<int> m_clickButton;
+    int m_heldButton;
     SRWLOCK m_bindingLock;
     Binding m_pending[kActionCount];
     KeyState m_state;

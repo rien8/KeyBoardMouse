@@ -105,17 +105,36 @@ TEST_CASE("wheel bindings toggle wheel bits")
     CHECK(ks.wheelMask() == 0u);
 }
 
-TEST_CASE("click and hold actions do not touch direction bits")
+TEST_CASE("numpad 5 clicks and numpad 0 holds without touching direction bits")
 {
     KeyState ks = routerWithDefaults();
     KeyOutcome click = ks.onKey({ 0x4C, false, false });
     CHECK(click.swallow);
-    CHECK(click.action == Action::LeftClick);
+    CHECK(click.action == Action::Click);
     KeyOutcome hold = ks.onKey({ 0x52, false, false });
     CHECK(hold.swallow);
-    CHECK(hold.action == Action::HoldLeft);
+    CHECK(hold.action == Action::Hold);
     CHECK(ks.directionMask() == 0u);
     CHECK(ks.wheelMask() == 0u);
+}
+
+TEST_CASE("slash and star switch the click mode as single-shot actions")
+{
+    KeyState ks = routerWithDefaults();
+
+    KeyOutcome slash = ks.onKey({ 0x35, true, false });
+    CHECK(slash.swallow);
+    CHECK(slash.action == Action::ModeLeft);
+    CHECK(ks.directionMask() == 0u);
+
+    KeyOutcome star = ks.onKey({ 0x37, false, false });
+    CHECK(star.swallow);
+    CHECK(star.action == Action::ModeRight);
+    CHECK(ks.directionMask() == 0u);
+
+    KeyOutcome slashUp = ks.onKey({ 0x35, true, true });
+    CHECK(slashUp.swallow);
+    CHECK(slashUp.action == Action::ModeLeft);
 }
 
 TEST_CASE("capture mode grabs the next key and reports its scan")

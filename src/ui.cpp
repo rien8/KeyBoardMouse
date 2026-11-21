@@ -76,6 +76,11 @@ void ui::draw(App& app, UiState& st)
     maskText(mask, maskBuf, sizeof(maskBuf));
     ImGui::SameLine();
     ImGui::TextDisabled(u8"输入: %s  速度: %.0f px/s", maskBuf, speed);
+    ImGui::SameLine();
+    if (app.hook().clickButton() == CLICK_BTN_RIGHT)
+        ImGui::TextColored(ImVec4(1.0f, 0.72f, 0.35f, 1.0f), u8"5 → 右键");
+    else
+        ImGui::TextDisabled(u8"5 → 左键");
 
     ImGui::Separator();
 

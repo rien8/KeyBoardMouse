@@ -32,11 +32,13 @@ Config defaultConfig()
     c.bindings[(int)Action::UpRight].scan = 0x49;
     c.bindings[(int)Action::DownLeft].scan = 0x4F;
     c.bindings[(int)Action::DownRight].scan = 0x51;
-    c.bindings[(int)Action::LeftClick].scan = 0x4C;
-    c.bindings[(int)Action::HoldLeft].scan = 0x52;
+    c.bindings[(int)Action::Click].scan = 0x4C;
+    c.bindings[(int)Action::Hold].scan = 0x52;
     c.bindings[(int)Action::Release].scan = 0x53;
     c.bindings[(int)Action::WheelUp].scan = 0x4E;
     c.bindings[(int)Action::WheelDown].scan = 0x4A;
+    c.bindings[(int)Action::ModeLeft].scan = 0x135;
+    c.bindings[(int)Action::ModeRight].scan = 0x37;
 
     c.enabled = true;
     c.csvLog = false;
@@ -129,9 +131,10 @@ const wchar_t* actionKey(int action)
         L"None",
         L"Up", L"Down", L"Left", L"Right",
         L"UpLeft", L"UpRight", L"DownLeft", L"DownRight",
-        L"LeftClick", L"RightClick", L"MiddleClick",
-        L"HoldLeft", L"Release",
+        L"Click", L"RightClick", L"MiddleClick",
+        L"Hold", L"Release",
         L"WheelUp", L"WheelDown",
+        L"ModeLeft", L"ModeRight",
     };
     return names[action];
 }
@@ -193,9 +196,10 @@ const char* g_actionNames[kActionCount] = {
     "",
     u8"上", u8"下", u8"左", u8"右",
     u8"左上", u8"右上", u8"左下", u8"右下",
-    u8"左键单击", u8"右键单击", u8"中键单击",
-    u8"按住左键", u8"释放按键",
+    u8"单击", u8"右键单击", u8"中键单击",
+    u8"按住", u8"释放按键",
     u8"滚轮上", u8"滚轮下",
+    u8"5 切左键", u8"5 切右键",
 };
 
 } // namespace
