@@ -64,7 +64,6 @@ App::App()
     , m_tray(nullptr)
     , m_uiState(nullptr)
     , m_lastBindings()
-    , m_numLockLowered(false)
     , m_autostart(false)
     , m_quit(false)
     , m_d3dDevice(nullptr)
@@ -331,15 +330,13 @@ void App::applyNumLockOff()
             m_hook->pressNumLockToggle();
         else
             numlock::pressToggle();
-        m_numLockLowered = true;
     }
 }
 
 void App::restoreNumLock()
 {
-    if (!m_numLockLowered)
+    if (!m_cfg.fixNumLock)
         return;
-    m_numLockLowered = false;
     const bool on = m_hook ? m_hook->numLockOn() : numlock::isOn();
     if (!on) {
         if (m_hook)

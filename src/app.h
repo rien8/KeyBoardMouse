@@ -68,7 +68,6 @@ private:
     TrayIcon* m_tray;
     ui::UiState* m_uiState;
     Binding m_lastBindings[kActionCount];
-    bool m_numLockLowered;
     bool m_autostart;
     bool m_quit;
 
