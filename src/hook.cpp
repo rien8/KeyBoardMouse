@@ -36,6 +36,13 @@ Action actionForScan(const Binding* bindings, unsigned short scanWithExt)
     for (int i = 0; i < kActionCount; ++i)
         if (bindings[i].scan == scanWithExt && bindings[i].action != Action::None)
             return bindings[i].action;
+
+    if ((scanWithExt & 0xFF) == 0x45) {
+        const unsigned short alt = scanWithExt ^ SCAN_EXT;
+        for (int i = 0; i < kActionCount; ++i)
+            if (bindings[i].scan == alt && bindings[i].action != Action::None)
+                return bindings[i].action;
+    }
     return Action::None;
 }
 

@@ -172,6 +172,30 @@ TEST_CASE("slash and star switch the click mode as single-shot actions")
     CHECK(slashUp.action == Action::ModeLeft);
 }
 
+TEST_CASE("numlock binding matches whether the key reports extended or not")
+{
+    Config c = defaultConfig();
+    CHECK(c.bindings[(int)Action::ToggleEnabled].scan == 0x45);
+
+    KeyState ks;
+    ks.setBindings(c.bindings, kActionCount);
+    CHECK(ks.onKey({ 0x45, false, false }).action == Action::ToggleEnabled);
+
+    KeyState ksExt;
+    Config c2 = defaultConfig();
+    c2.bindings[(int)Action::ToggleEnabled].scan = 0x145;
+    ksExt.setBindings(c2.bindings, kActionCount);
+    CHECK(ksExt.onKey({ 0x45, true, false }).action == Action::ToggleEnabled);
+    CHECK(ksExt.onKey({ 0x45, false, false }).action == Action::ToggleEnabled);
+}
+
+TEST_CASE("the extended alias does not leak to other keys")
+{
+    KeyState ks = routerWithDefaults();
+    CHECK(ks.onKey({ 0x1C, true, false }).action == Action::None);
+    CHECK(ks.onKey({ 0x48, true, false }).action == Action::None);
+}
+
 TEST_CASE("capture mode grabs the next key and reports its scan")
 {
     KeyState ks = routerWithDefaults();

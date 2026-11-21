@@ -183,6 +183,7 @@ const ScanName g_scanNames[] = {
     { 0x14B, u8"←" }, { 0x14D, u8"→" },
     { 0x14F, "End" }, { 0x150, u8"↓" }, { 0x151, "PgDn" },
     { 0x152, "Ins" }, { 0x153, "Del" },
+    { 0x145, "NumLock" },
     { 0x15B, u8"左 Win" }, { 0x15C, u8"右 Win" }, { 0x15D, "Menu" },
     { 0x5B, u8"左 Win" }, { 0x5C, u8"右 Win" },
 };

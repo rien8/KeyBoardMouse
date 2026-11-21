@@ -247,6 +247,8 @@ TEST_CASE("scan names distinguish numpad, extended and unknown keys")
     CHECK(std::string(scanName(0x5B)) == u8"左 Win");
     CHECK(std::string(scanName(0x5B | SCAN_EXT)) == u8"左 Win");
     CHECK(std::string(scanName(0x48 | SCAN_EXT)) != u8"小键盘 8");
+    CHECK(std::string(scanName(0x145)) == "NumLock");
+    CHECK(std::string(scanName(0x45)) == "NumLock");
     std::string unknown = scanName(0x180);
     CHECK(unknown.rfind("0x", 0) == 0);
 }
