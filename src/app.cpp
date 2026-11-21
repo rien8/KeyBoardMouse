@@ -408,6 +408,12 @@ LRESULT CALLBACK App::wndProc(HWND h, UINT msg, WPARAM wp, LPARAM lp)
     case WM_APP_CAPTURE:
         app.onCaptureResult((unsigned short)wp, lp != 0);
         return 0;
+    case WM_GETMINMAXINFO: {
+        auto* mmi = reinterpret_cast<MINMAXINFO*>(lp);
+        mmi->ptMinTrackSize.x = 480;
+        mmi->ptMinTrackSize.y = 420;
+        return 0;
+    }
     case WM_SIZE: {
         if (wp == SIZE_MINIMIZED)
             return 0;

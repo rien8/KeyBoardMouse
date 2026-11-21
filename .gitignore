@@ -3,3 +3,4 @@ build-*/
 _session_plan/
 *.log
 *.csv
+shot_*.png

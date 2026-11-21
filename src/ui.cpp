@@ -29,12 +29,20 @@ void maskText(unsigned mask, char* out, size_t cap)
         snprintf(out, cap, u8"—");
 }
 
-void hint(const char* text)
+void formRow(const char* label, const char* tip)
 {
-    ImGui::SameLine();
-    ImGui::TextDisabled("(?)");
-    if (ImGui::IsItemHovered())
-        ImGui::SetTooltip("%s", text);
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextUnformatted(label);
+    if (tip) {
+        ImGui::SameLine();
+        ImGui::TextDisabled("(?)");
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("%s", tip);
+    }
+    ImGui::TableNextColumn();
+    ImGui::SetNextItemWidth(-1.0f);
 }
 
 } // namespace
@@ -42,16 +50,24 @@ void hint(const char* text)
 void ui::draw(App& app, UiState& st)
 {
     Config& cfg = app.cfg();
+    const ImGuiIO& io = ImGui::GetIO();
 
-    ImGui::SetNextWindowSize(ImVec2(540, 600), ImGuiCond_FirstUseEver);
-    ImGui::Begin(u8"鼠标键", nullptr, ImGuiWindowFlags_NoCollapse);
+    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+    ImGui::SetNextWindowSize(io.DisplaySize);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10.0f, 10.0f));
+
+    const ImGuiWindowFlags rootFlags =
+        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoSavedSettings |
+        ImGuiWindowFlags_NoBringToFrontOnFocus;
+    ImGui::Begin("##mousekey_root", nullptr, rootFlags);
 
     bool enabled = cfg.enabled;
-    if (ImGui::Checkbox(u8"启用", &enabled)) {
+    if (ImGui::Checkbox(u8"启用", &enabled))
         app.setEnabled(enabled);
-        ImGui::End();
-        return;
-    }
 
     unsigned mask = 0;
     double speed = 0.0;
@@ -64,17 +80,33 @@ void ui::draw(App& app, UiState& st)
     ImGui::Separator();
 
     if (ImGui::CollapsingHeader(u8"运动参数", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::DragFloat(u8"起步速度 px/s", &cfg.motion.vStart, 1.0f, 1.0f, 2000.0f, "%.0f");
-        hint(u8"按下瞬间的初速,越小起手越稳。");
-        ImGui::DragFloat(u8"最大速度 px/s", &cfg.motion.vMax, 10.0f, 100.0f, 8000.0f, "%.0f");
-        hint(u8"满速,决定跨屏耗时。");
-        ImGui::DragFloat(u8"加速时间 ms", &cfg.motion.rampMs, 5.0f, 1.0f, 5000.0f, "%.0f");
-        hint(u8"从起步速度爬到最大速度的时间。");
-        ImGui::SliderFloat(u8"曲线弯曲 gamma", &cfg.motion.gamma, 0.1f, 4.0f, "%.2f");
-        hint(u8"小于 1 起手快,大于 1 起手慢、低速段长。");
-        ImGui::SliderFloat(u8"斜向系数", &cfg.motion.diagScale, 0.5f, 1.0f, "%.3f");
-        hint(u8"0.707 时斜向与直向同速(各向同性)。");
-        ImGui::DragFloat(u8"滚轮速度 格/s", &cfg.motion.wheelRate, 1.0f, 1.0f, 60.0f, "%.0f");
+        const float avail = ImGui::GetContentRegionAvail().x;
+        const float maxValueW = 280.0f;
+        const float valueW = (avail * 0.55f < maxValueW) ? avail * 0.55f : maxValueW;
+        if (ImGui::BeginTable("##motion", 2, ImGuiTableFlags_SizingStretchProp)) {
+            ImGui::TableSetupColumn(u8"参数", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableSetupColumn(u8"值", ImGuiTableColumnFlags_WidthFixed, valueW);
+
+            formRow(u8"起步速度 px/s", u8"按下瞬间的初速,越小起手越稳。");
+            ImGui::DragFloat("##vstart", &cfg.motion.vStart, 1.0f, 1.0f, 2000.0f, "%.0f");
+
+            formRow(u8"最大速度 px/s", u8"满速,决定跨屏耗时。");
+            ImGui::DragFloat("##vmax", &cfg.motion.vMax, 10.0f, 100.0f, 8000.0f, "%.0f");
+
+            formRow(u8"加速时间 ms", u8"从起步速度爬到最大速度的时间。");
+            ImGui::DragFloat("##ramp", &cfg.motion.rampMs, 5.0f, 1.0f, 5000.0f, "%.0f");
+
+            formRow(u8"曲线弯曲 gamma", u8"小于 1 起手快,大于 1 起手慢、低速段长。");
+            ImGui::SliderFloat("##gamma", &cfg.motion.gamma, 0.1f, 4.0f, "%.2f");
+
+            formRow(u8"斜向系数", u8"0.707 时斜向与直向同速(各向同性)。");
+            ImGui::SliderFloat("##diag", &cfg.motion.diagScale, 0.5f, 1.0f, "%.3f");
+
+            formRow(u8"滚轮速度 格/s", nullptr);
+            ImGui::DragFloat("##wheel", &cfg.motion.wheelRate, 1.0f, 1.0f, 60.0f, "%.0f");
+
+            ImGui::EndTable();
+        }
     }
 
     if (ImGui::CollapsingHeader(u8"按键映射", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -154,4 +186,5 @@ void ui::draw(App& app, UiState& st)
     ImGui::TextDisabled(u8"配置文件: %s", app.iniPathUtf8());
 
     ImGui::End();
+    ImGui::PopStyleVar(3);
 }
